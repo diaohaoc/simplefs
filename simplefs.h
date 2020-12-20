@@ -2,10 +2,10 @@
 // Created by 啦啦啦 on 2020/12/6.
 //
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <stdint.h>
 #include <time.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <malloc.h>
 #include <string.h>
 
 #ifndef SIMPLEFS_SIMPLEFS_H
@@ -16,12 +16,15 @@
 #define MAXOPENFILE        10
 #define NAMELENGTH         32
 #define DISK_SIZE          1048576
+#define DIRLEN             80
 #define SYS_PATH           "./file"
 #define ROOT               "/"
-#define FOLDER_COLOR       "\e[1;32m"
-#define DEFAULT_COLOR      "\e[0m"
+#define GRN                "dir:"
+#define INFO               "Disk Size = 1MB, Block Size = 1KB, Block0 in 0, FAT0/1 in 1/3, Root Directory in 5"
 #define FREE               0x0000
 #define END                0xffff
+#define min(X, Y) (((X) < (Y)) ? (X) : (Y))
+
 
 typedef struct BLOCK0{
     char information[200];
@@ -34,11 +37,10 @@ typedef struct FCB{
     char filename[8];
     char exname[3];
     unsigned char attribute; // 0:directory   1:file
-    unsigned char reverse[10];
     unsigned short create_time;
     unsigned short create_data;
-    unsigned short first_block_num; //first block num of file
-    unsigned long file_length;
+    unsigned short first; //first block num of file
+    unsigned long length;
     char free; // is the directory empty
 }fcb;
 
@@ -52,6 +54,8 @@ typedef struct USEROPEN{
     //file current state
     char dir[80];
     int count;
+    int dirno;
+    int diroff;
     char fcbstate;
     char topenfile;
 }useropen;
@@ -59,7 +63,7 @@ typedef struct USEROPEN{
 
 unsigned char *fs_head;
 useropen openfile_list[MAXOPENFILE];
-int curdir;
+int curid;
 char currentdir[80];
 unsigned char *startp;
 
@@ -71,16 +75,26 @@ unsigned short get_date(struct tm *timeinfo);
 
 void format();
 
-int set_fcb(fcb *f, const char *filename, const char *exname, unsigned char attr, unsigned short first, unsigned long length, char ffree);
-fcb *fcb_copy(fcb *dest, fcb *src);
+void set_fcb(fcb *f, const char *filename, unsigned char attr, unsigned short first);
+void useropen_init(useropen *user, int dirno, int diroff, const char *dir);
+int getFreeFatId();
+void fatFree(int id);
+int getFreeOpenList();
+int getNextFatId();
 
-int get_free_block(int count);
-int set_free_block(unsigned short first, unsigned short length, int mode);
+void my_ls();
+void my_save(int fd);
+void my_close(int fd);
+void my_exitsys();
+void my_reload(int fd);
+void my_cd(char *filename);
+int my_open(char *filename);
+int read_ls(int fd, unsigned char *text, int len);
+int do_read(int fd, unsigned char *text, int len);
+int fat_read(int id, unsigned char *text, int blockoffset, int len);
+int fat_write(int id, unsigned char *text, int blockoffset, int len);
 
-int my_ls(char **args);
 
-void get_fullname(char *fullname, fcb *fcb1);
-char *trans_time(char *stime, unsigned short time);
-char *trans_date(char *sdate, unsigned short date);
+int splitDir(char dirs[DIRLEN][DIRLEN], char *filename);
 
 #endif //SIMPLEFS_SIMPLEFS_H
