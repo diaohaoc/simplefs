@@ -88,13 +88,22 @@ void my_close(int fd);
 void my_exitsys();
 void my_reload(int fd);
 void my_cd(char *filename);
+void my_rm(char *filename);
+void my_rmdir(char *filename);
+void my_mkdir(char *filename);
+int my_create(char *filename);
 int my_open(char *filename);
+int my_touch(char *filename, int attribute, int *rpafd);
+int getOpenlist(int fd, const char *orgdir);
+int getFcb(fcb *fcbp, int *dirno, int *diroff, int fd, const char *dir);
+void getPos(int *id, int *offset, unsigned short first, int length);
 int read_ls(int fd, unsigned char *text, int len);
 int do_read(int fd, unsigned char *text, int len);
+int do_write(int fd, unsigned char *text, int len);
 int fat_read(int id, unsigned char *text, int blockoffset, int len);
 int fat_write(int id, unsigned char *text, int blockoffset, int len);
 
 
 int splitDir(char dirs[DIRLEN][DIRLEN], char *filename);
-
+void splitLastDir(char *dir, char new_dir[2][DIRLEN]);
 #endif //SIMPLEFS_SIMPLEFS_H
