@@ -799,6 +799,7 @@ int do_write(int fd, int len, char *content, char mode) {
     if (mode == 'a') {
         memcpy(text + count, input, len);
     } else {
+        memset(text, '\0', openfile_list[fd].open_fcb.length);
         memcpy(text, input, len);
     }
 
